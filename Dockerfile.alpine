@@ -1,0 +1,10 @@
+# Author: Satish Gaikwad <satish@satishweb.com>
+FROM satishweb/format-disk
+LABEL MAINTAINER satish@satishweb.com
+
+# Add script and make it executable
+ADD setup-ephemeral-disks ./
+RUN chmod +x ./setup-ephemeral-disks
+
+# Run the command on container startup
+CMD ["/setup-ephemeral-disks"]

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -ex
+
+# The name of the disk we want to manage
+DISK=/.bottlerocket/rootfs/dev/nvme2n1
+# Sentry file to check if the disk was already partitioned and formatted
+PARTITIONS_CREATED=/.bottlerocket/bootstrap-containers/current/created
+# Mounts from this mount point will propagate accross mount namespaces
+BASE_MOUNT_POINT=/.bottlerocket/rootfs/data
+
+# If the disk hasn't been partitioned, create the partitions and format them
+if [ ! -f $PARTITIONS_CREATED ]; then
+  parted -s $DISK mklabel gpt 1>/dev/null
+  parted -s $DISK mkpart primary ext4 0% 100% 1>/dev/null
+  mkfs.ext4 -F ${DISK}p1
+  # Create sentry file once the disk is partitioned and formatted
+  touch $PARTITIONS_CREATED
+fi
+
+# We make sure the target mount points exist
+mkdir -p $BASE_MOUNT_POINT/part1
+
+# Always mount the partitions
+mount ${DISK}p1 $BASE_MOUNT_POINT/part1
